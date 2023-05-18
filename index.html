@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="container">
+        <div class="row" style="height: 200px;"></div>
+        <div class="row">
+            <div class="col-6 m-auto">
+                <div class="todo-list ">
+                    <div class="header d-flex">
+                        <i class="bi bi-chevron-down ps-4 down-btn"></i>
+                        <input  type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
+                               placeholder="What needs to be done?" autocomplete="off">
+                    </div>
+                    <ul>
+                        <li class="todo-item" v-for="(todo,index) in todos" :key="todo.index" >
+                            <div>
+                                <input  @click="show(todo)" v-model="todo.completed" :id="index" :value="todo.task"
+                                       type="checkbox" style="margin-right: 10px;">
+                                <label @dblclick="editTodo(todo)"  v-if="!todo.editing" :class="{completed:todo.completed}"
+                                       :value="todo.task">{{todo.task}}</label>
+                                <input  v-focus  @blur="doneEdit(todo)" type="text" v-if="todo.editing" v-model="todo.task">
+
+                            </div>
+                            <div @click="removeTodo(index)" class="delete-btn text-danger">
+                                <i class="bi bi-x-lg pe-3"></i>
+                            </div>
+                        </li>
+                        <li class=" px-3 py-1 d-flex justify-content-between footer">
+                           <div class="align-self-center item-left "> <p class="mb-0">{{doneJob}} item left</p></div>
+                           <div class="align-self-center" >
+                               <button class="active">All</button>
+                               <button>Active</button>
+                               <button>Completed</button>
+                           </div>
+                            <div class="align-self-center">
+                                <button>Clear Completed</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const {createApp} = Vue;
+    const focus = {
+        mounted: (el) => el.focus()
+    };
+    const app = createApp({
+        data() {
+            return {
+                checked: [],
+                input: '',
+                todos: [
+                    {
+                        id: 1,
+                        task: 'Home Work',
+                        completed: false,
+                        editing:false,
+                    },
+                    {
+                        id: 2,
+                        task: 'Work Out',
+                        completed: false,
+                        editing:false,
+                    },
+                    {
+                        id: 3,
+                        task: 'Go Shopping',
+                        completed: false,
+                        editing:false
+
+                    },
+                ]
+            }
+        },
+        computed:{
+            doneJob(){
+                return  this.todos.filter(todo=>todo.completed===false).length;
+            },
+
+        },
+        methods: {
+            show(todo) {
+                todo.completed = !todo.completed;
+            },
+            addTodo() {
+                const newInput = {
+                    id: new Date().toISOString(),
+                    task: this.input,
+                    completed: false,
+                    editing:false,
+                };
+                this.todos.push(newInput);
+                this.input = '';
+                this.id++;
+
+            },
+            removeTodo(id) {
+                // const id=todo.id;
+                // this.todos=this.todos.filter(todo=>todo.id!==id);
+                this.todos.splice(id, 1);
+
+            },
+            editTodo(todo){
+                this.todos.filter(todo=>todo.editing=false);
+               todo.editing= !todo.editing;
+
+            },
+            doneEdit(todo){
+                todo.editing=!todo.editing;
+            },
+
+
+
+        },
+        directives:{
+            focus
+        }
+
+    });
+    app.mount('#app');
+
+</script>
+<style scoped>
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .todo-item {
+        border: 1px solid #e2e2e2;
+        padding: 12px 25px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .todo-list {
+        box-shadow: 0 0 14px 7px #dee2e6;
+    }
+
+    .input-text {
+        display: inline-block;
+        width: 100%;
+        border: none;
+        outline: none;
+        padding: 15px;
+    }
+    .footer button{
+        border:1px solid white;
+        background:none;
+        outline: none;
+        margin: 0 5px;
+        color: #8b8b8b;
+    }
+
+    .footer button:hover{
+        border: 1px solid #dfdfdf;
+        border-radius: 3px;
+    }
+     .active{
+        border: 1px solid #dfdfdf!important;
+        border-radius: 3px;
+    }
+    .header {
+        justify-content: center;
+        align-items: center;
+        border-bottom: 2px solid #c2c2c2;
+
+    }
+
+    .completed {
+        text-decoration: line-through;
+    }
+</style>
+</body>
+</html>
