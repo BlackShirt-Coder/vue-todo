@@ -20,7 +20,7 @@
             <div class="col-6 m-auto">
                 <div class="todo-list ">
                     <div class="header d-flex">
-                        <i class="bi bi-chevron-down ps-4 down-btn"></i>
+                        <i @click="completeAll()" class="bi bi-chevron-down ps-4 down-btn"></i>
                         <input  type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
                                placeholder="What needs to be done?" autocomplete="off">
                     </div>
@@ -31,11 +31,11 @@
                                        type="checkbox" style="margin-right: 10px;">
                                 <label @dblclick="editTodo(todo)"  v-if="!todo.editing" :class="{completed:todo.completed}"
                                        :value="todo.task">{{todo.task}}</label>
-                                <input  v-focus  @blur="doneEdit(todo)" type="text" v-if="todo.editing" v-model="todo.task">
+                                <input @keyup.esc="cancelEdit(todo)"  v-focus  @keyup.enter="doneEdit(todo)" type="text" v-if="todo.editing" v-model="todo.task">
 
                             </div>
                             <div @click="removeTodo(index)" class="delete-btn text-danger">
-                                <i class="bi bi-x-lg pe-3"></i>
+                                <i class="bi bi-x-lg pe-3" style="cursor: pointer;"></i>
                             </div>
                         </li>
                         <li class=" px-3 py-1 d-flex justify-content-between footer">
@@ -66,6 +66,7 @@
             return {
                 checked: [],
                 input: '',
+                todoCache:'',
                 todos: [
                     {
                         id: 1,
@@ -111,6 +112,15 @@
                 this.id++;
 
             },
+            completeAll(){
+
+                this.todos.forEach(todo=>todo.completed=true);
+            },
+            cancelEdit(todo){
+              todo.task=this.todoCache;
+              todo.editing=false;
+              console.log(todo);
+            },
             removeTodo(id) {
                 // const id=todo.id;
                 // this.todos=this.todos.filter(todo=>todo.id!==id);
@@ -118,8 +128,9 @@
 
             },
             editTodo(todo){
+                this.todoCache=todo.task;
                 this.todos.filter(todo=>todo.editing=false);
-               todo.editing= !todo.editing;
+                todo.editing= !todo.editing;
 
             },
             doneEdit(todo){
