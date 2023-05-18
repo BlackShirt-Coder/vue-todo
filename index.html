@@ -20,33 +20,36 @@
             <div class="col-6 m-auto">
                 <div class="todo-list ">
                     <div class="header d-flex">
-                        <i @click="completeAll()" class="bi bi-chevron-down ps-4 down-btn"></i>
-                        <input  type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
+                        <i :class="{downBtn:allCompleted}" @click="completeAll()" class="bi bi-chevron-down ps-4 "></i>
+                        <input type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
                                placeholder="What needs to be done?" autocomplete="off">
                     </div>
                     <ul>
-                        <li class="todo-item" v-for="(todo,index) in todos" :key="todo.index" >
+                        <li class="todo-item" v-for="(todo,index) in filterTodos" :key="todo.index">
                             <div>
-                                <input  @click="show(todo)" v-model="todo.completed" :id="index" :value="todo.task"
+                                <input @click="show(todo)" v-model="todo.completed" :id="index" :value="todo.task"
                                        type="checkbox" style="margin-right: 10px;">
-                                <label @dblclick="editTodo(todo)"  v-if="!todo.editing" :class="{completed:todo.completed}"
+                                <label @dblclick="editTodo(todo)" v-if="!todo.editing"
+                                       :class="{completed:todo.completed}"
                                        :value="todo.task">{{todo.task}}</label>
-                                <input @keyup.esc="cancelEdit(todo)"  v-focus  @keyup.enter="doneEdit(todo)" type="text" v-if="todo.editing" v-model="todo.task">
 
+                                    <input @keyup.esc="cancelEdit(todo)" v-focus @keyup.enter="doneEdit(todo)"
+                                           type="text" v-if="todo.editing" v-model="todo.task">
+                                
                             </div>
                             <div @click="removeTodo(index)" class="delete-btn text-danger">
                                 <i class="bi bi-x-lg pe-3" style="cursor: pointer;"></i>
                             </div>
                         </li>
                         <li class=" px-3 py-1 d-flex justify-content-between footer">
-                           <div class="align-self-center item-left "> <p class="mb-0">{{doneJob}} item left</p></div>
-                           <div class="align-self-center" >
-                               <button class="active">All</button>
-                               <button>Active</button>
-                               <button>Completed</button>
-                           </div>
+                            <div class="align-self-center item-left "><p class="mb-0">{{doneJob}} item left</p></div>
                             <div class="align-self-center">
-                                <button>Clear Completed</button>
+                                <button @click="tasks='all'" class="active">All</button>
+                                <button @click="tasks='active'" filterTodos>Active</button>
+                                <button @click="tasks='completed'">Completed</button>
+                            </div>
+                            <div class="align-self-center">
+                                <button @click="clearCompleted()" v-if="filterCompleted">Clear Completed</button>
                             </div>
                         </li>
                     </ul>
@@ -66,34 +69,50 @@
             return {
                 checked: [],
                 input: '',
-                todoCache:'',
+                todoCache: '',
+                completed: false,
+                tasks: 'all',
                 todos: [
                     {
                         id: 1,
                         task: 'Home Work',
                         completed: false,
-                        editing:false,
+                        editing: false,
                     },
                     {
                         id: 2,
                         task: 'Work Out',
                         completed: false,
-                        editing:false,
+                        editing: false,
                     },
                     {
                         id: 3,
                         task: 'Go Shopping',
                         completed: false,
-                        editing:false
+                        editing: false
 
                     },
                 ]
             }
         },
-        computed:{
-            doneJob(){
-                return  this.todos.filter(todo=>todo.completed===false).length;
+        computed: {
+            doneJob() {
+                return this.todos.filter(todo => todo.completed === false).length;
             },
+            allCompleted() {
+                return this.todos.filter(todo => todo.completed === false).length == 0;
+            },
+            filterTodos() {
+                if (this.tasks === 'active') {
+                    return this.todos.filter(todo => !todo.completed)
+                } else if (this.tasks === 'completed') {
+                    return this.todos.filter(todo => todo.completed);
+                }
+                return this.todos;
+            },
+            filterCompleted() {
+                return this.todos.filter(todo => todo.completed === true).length > 0
+            }
 
         },
         methods: {
@@ -105,21 +124,30 @@
                     id: new Date().toISOString(),
                     task: this.input,
                     completed: false,
-                    editing:false,
+                    editing: false,
                 };
                 this.todos.push(newInput);
                 this.input = '';
                 this.id++;
 
             },
-            completeAll(){
+            completeAll() {
+                this.completed = !this.completed;
+                if (this.completed == true) {
+                    this.todos.forEach(todo => todo.completed = true);
+                } else {
+                    this.todos.forEach(todo => todo.completed = false);
 
-                this.todos.forEach(todo=>todo.completed=true);
+                }
+
             },
-            cancelEdit(todo){
-              todo.task=this.todoCache;
-              todo.editing=false;
-              console.log(todo);
+            clearCompleted() {
+                this.todos = this.todos.filter(todo => !todo.completed);
+            },
+            cancelEdit(todo) {
+                todo.task = this.todoCache;
+                todo.editing = false;
+                console.log(todo);
             },
             removeTodo(id) {
                 // const id=todo.id;
@@ -127,20 +155,19 @@
                 this.todos.splice(id, 1);
 
             },
-            editTodo(todo){
-                this.todoCache=todo.task;
-                this.todos.filter(todo=>todo.editing=false);
-                todo.editing= !todo.editing;
+            editTodo(todo) {
+                this.todoCache = todo.task;
+                this.todos.filter(todo => todo.editing = false);
+                todo.editing = !todo.editing;
 
             },
-            doneEdit(todo){
-                todo.editing=!todo.editing;
+            doneEdit(todo) {
+                todo.editing = !todo.editing;
             },
-
 
 
         },
-        directives:{
+        directives: {
             focus
         }
 
@@ -173,22 +200,38 @@
         outline: none;
         padding: 15px;
     }
-    .footer button{
-        border:1px solid white;
-        background:none;
+
+    .bi-chevron-down {
+        color: #c2c2c2;
+        font-weight: bolder;
+        font-size: 25px;
+    }
+
+    .downBtn {
+        color: #333333 !important;
+        font-weight: bolder;
+        font-size: 25px;
+
+    }
+
+    .footer button {
+        border: 1px solid white;
+        background: none;
         outline: none;
         margin: 0 5px;
         color: #8b8b8b;
     }
 
-    .footer button:hover{
+    .footer button:hover {
         border: 1px solid #dfdfdf;
         border-radius: 3px;
     }
-     .active{
-        border: 1px solid #dfdfdf!important;
+
+    .active {
+        border: 1px solid #dfdfdf !important;
         border-radius: 3px;
     }
+
     .header {
         justify-content: center;
         align-items: center;
