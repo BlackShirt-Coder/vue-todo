@@ -21,11 +21,16 @@
                 <div class="todo-list ">
                     <div class="header d-flex">
                         <i :class="{downBtn:allCompleted}" @click="completeAll()" class="bi bi-chevron-down ps-4 "></i>
-                        <input type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
+                        <input v-if="searchFeatures" type="text" class="input-text" v-model="search" placeholder="Search...">
+                        <input v-else type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
                                placeholder="What needs to be done?" autocomplete="off">
+                        <div class="me-5 search-icon">
+                            <i @click="searchToggle()"  class="bi bi-search"></i>
+                        </div>
                     </div>
+
                     <ul>
-                        <li class="todo-item" v-for="(todo,index) in filterTodos" :key="todo.index">
+                        <li class="todo-item" v-for="(todo,index) in searchTodo" :key="todo.index">
                             <div>
                                 <input @click="show(todo)" v-model="todo.completed" :id="index" :value="todo.task"
                                        type="checkbox" style="margin-right: 10px;">
@@ -35,7 +40,7 @@
 
                                     <input @keyup.esc="cancelEdit(todo)" v-focus @keyup.enter="doneEdit(todo)"
                                            type="text" v-if="todo.editing" v-model="todo.task">
-                                
+
                             </div>
                             <div @click="removeTodo(index)" class="delete-btn text-danger">
                                 <i class="bi bi-x-lg pe-3" style="cursor: pointer;"></i>
@@ -69,9 +74,11 @@
             return {
                 checked: [],
                 input: '',
+                search:'',
                 todoCache: '',
                 completed: false,
                 tasks: 'all',
+                searchFeatures:false,
                 todos: [
                     {
                         id: 1,
@@ -99,6 +106,7 @@
             doneJob() {
                 return this.todos.filter(todo => todo.completed === false).length;
             },
+
             allCompleted() {
                 return this.todos.filter(todo => todo.completed === false).length == 0;
             },
@@ -110,12 +118,25 @@
                 }
                 return this.todos;
             },
+            searchTodo(){
+              if(this.search.trim()!==''){
+                  if( this.filterTodos.filter(todo=>todo.task.toLowerCase().indexOf(this.search.toLowerCase()) !== -1)){
+                      return this.filterTodos.filter(todo=>todo.task.toLowerCase().indexOf(this.search.toLowerCase()) !== -1);
+                  }
+                 
+              }
+              return this.filterTodos;
+            },
             filterCompleted() {
                 return this.todos.filter(todo => todo.completed === true).length > 0
             }
 
         },
         methods: {
+            searchToggle(){
+                 this.searchFeatures=!this.searchFeatures;
+
+            },
             show(todo) {
                 todo.completed = !todo.completed;
             },
@@ -213,7 +234,10 @@
         font-size: 25px;
 
     }
-
+ .search-icon{
+     font-size: 20px;
+     color: #2e2e2e;
+ }
     .footer button {
         border: 1px solid white;
         background: none;
